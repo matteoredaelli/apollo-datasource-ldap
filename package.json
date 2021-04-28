@@ -1,0 +1,42 @@
+{
+  "name": "apollo-datasource-ldap",
+  "version": "0.0.2",
+  "description": "LDAP datasource for Apolo GraphQL server",
+  "main": "index.js",
+  "scripts": {
+    "lint": "prettier '**/*.js' && eslint '**/*.js'",
+    "lint:fix": "prettier --write '**/*.js' && eslint --fix '**/*.js'",
+    "test": "jest"
+  },
+  "engines": {
+    "node": ">=10.6.0",
+    "npm": ">=6.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matteoredaelli/apollo-datasource-ldap.git"
+  },
+  "keywords": [
+    "apollo",
+    "graphql",
+    "ldap"
+  ],
+  "author": "Matteo Redaelli",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matteoredaelli/apollo-datasource-ldap/issues"
+  },
+  "homepage": "https://github.com/matteoredaelli/apollo-datasource-ldap#README.md",
+  "dependencies": {
+    "apollo-datasource": "^0.8.0",
+    "ldapjs-promise": "^1.0.5"
+  },
+  "devDependencies": {
+    "eslint": "^7",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "lint-staged": "^10.5.4",
+    "prettier": "2.2.1"
+  }
+}
