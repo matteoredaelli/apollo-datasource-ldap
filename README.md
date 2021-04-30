@@ -115,10 +115,10 @@ Sample queries
 ```
 ```graphql
 {
-  ldap_search_group(
+  ldap_search_user(
 	ldap_id: "ldap_xxx"
 	basedn: "dc=xxx,dc=redaelli,dc=org"
-	filter: "(samaccountname=qliksense_plant1)"
+	filter: "(samaccountname=matteo)"
   ){
   dn
   pwdLastSetExt
