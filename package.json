@@ -1,6 +1,6 @@
 {
   "name": "apollo-datasource-ldap",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "LDAP datasource for Apolo GraphQL server",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,8 @@
   "homepage": "https://github.com/matteoredaelli/apollo-datasource-ldap#README.md",
   "dependencies": {
     "apollo-datasource": "^0.8.0",
+    "apollo-server": "^2.23.0",
+    "dns": "^0.2.2",
     "ldapjs-promise": "^1.0.5"
   },
   "devDependencies": {

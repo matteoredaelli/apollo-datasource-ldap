@@ -18,14 +18,28 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+const { gql } = require("apollo-server");
 const { DataSource } = require("apollo-datasource");
 const ldap = require("ldapjs-promise");
+const util = require("util");
+const dns = require("dns");
 
 function filetime2date(ldaptime) {
   const unixTime = ldaptime / 10000000 - 11644473600;
   const mydate = new Date(Math.round(unixTime * 1000));
   return mydate.toISOString();
+}
+
+async function getIP(host) {
+  const lookup = util.promisify(dns.lookup);
+
+  try {
+    result = lookup(host);
+    return result;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 class LdapDataSource extends DataSource {
@@ -64,211 +78,213 @@ class LdapDataSource extends DataSource {
   }
 }
 
-const typeDefs = `
-type Json {
-     json: String
-}
+const typeDefs = gql`
+  type LdapComputer {
+    dn: ID!
+    ldap_id: String
+    ipaddress: String
+    cn: String
+    distinguishedName: String
+    instanceType: Int
+    whenCreated: String
+    whenChanged: String
+    uSNCreated: Int
+    uSNChanged: Int
+    name: String
+    objectGUID: String
+    userAccountControl: Int
+    codePage: Int
+    countryCode: Int
+    lastLogon: String
+    localPolicyFlags: Int
+    pwdLastSet: String
+    primaryGroupID: Int
+    objectSid: String
+    accountExpires: String
+    logonCount: Int
+    sAMAccountName: String!
+    sAMAccountType: Int
+    operatingSystem: String
+    operatingSystemVersion: String
+    dNSHostName: String
+    objectCategory: String
+    isCriticalSystemObject: Boolean
+    lastLogonTimestamp: String
+    msDSSupportedEncryptionTypes: Int
+    msDSGenerationId: String
+    msDFSRComputerReferenceBL: [String]
+    dSCorePropagationData: [String]
+    servicePrincipalName: [String]
+    rIDSetReferences: [String]
+    serverReferenceBL: [String]
+    userCertificate: [String]
+    description: [String]
+    objectClass: [String]
+  }
 
-type LdapComputer {
-  dn: ID!
-  ldap_id: String
-  cn: String
-  distinguishedName: String
-  instanceType: Int
-  whenCreated: String
-  whenChanged: String
-  uSNCreated: Int
-  uSNChanged: Int
-  name: String
-  objectGUID: String
-  userAccountControl: Int
-  codePage: Int
-  countryCode: Int
-  lastLogon: String
-  localPolicyFlags: Int
-  pwdLastSet: String
-  primaryGroupID: Int
-  objectSid: String
-  accountExpires: String
-  logonCount: Int
-  sAMAccountName: String!
-  sAMAccountType: Int
-  operatingSystem: String
-  operatingSystemVersion: String
-  dNSHostName: String
-  objectCategory: String
-  isCriticalSystemObject: Boolean
-  lastLogonTimestamp: String
-  msDSSupportedEncryptionTypes: Int
-  msDSGenerationId: String
-  msDFSRComputerReferenceBL: [String]
-  dSCorePropagationData: [String]
-  servicePrincipalName: [String]
-  rIDSetReferences: [String]
-  serverReferenceBL: [String]
-  userCertificate: [String]
-  description: [String]
-  objectClass: [String]
-}
+  union LdapObject = LdapGroup | LdapUser | LdapComputer
 
-union LdapGroupOrUser = LdapGroup | LdapUser
+  type LdapGroup {
+    dn: ID!
+    ldap_id: String
+    memberExt: [LdapObject]
+    cn: String
+    distinguishedName: String
+    instanceType: Int
+    whenCreated: String
+    whenChanged: String
+    uSNCreated: Int
+    uSNChanged: Int
+    name: String
+    objectGUID: String
+    objectSid: String
+    sAMAccountName: String
+    sAMAccountType: Int
+    groupType: Int
+    objectCategory: String
+    dSCorePropagationData: [String]
+    memberOf: [String]
+    member: [String]
+    description: [String]
+    objectClass: [String]
+  }
 
-type LdapGroup {
-  dn: ID!
-  ldap_id: String
-  memberExt: [LdapGroupOrUser]
-  cn: String
-  distinguishedName: String
-  instanceType: Int
-  whenCreated: String
-  whenChanged: String
-  uSNCreated: Int
-  uSNChanged: Int
-  name: String
-  objectGUID: String
-  objectSid: String
-  sAMAccountName: String
-  sAMAccountType: Int
-  groupType: Int
-  objectCategory: String
-  dSCorePropagationData: [String]
-  memberOf: [String]
-  member: [String]
-  description: [String]
-  objectClass: [String]
-}
+  type LdapUser {
+    dn: ID!
+    ldap_id: String
+    directReportsExt: [LdapUser]
+    memberOfExt: [LdapGroup]
+    cn: String
+    sn: String
+    c: String
+    l: String
+    postalCode: String
+    telephoneNumber: String
+    givenName: String
+    distinguishedName: String
+    instanceType: Int
+    whenCreated: String
+    whenChanged: String
+    displayName: String
+    uSNCreated: Int
+    uSNChanged: Int
+    co: String
+    company: String
+    streetAddress: String
+    targetAddress: String
+    extensionAttribute2: String
+    extensionAttribute6: String
+    extensionAttribute7: String
+    extensionAttribute9: String
+    extensionAttribute10: String
+    mailNickname: String
+    extensionAttribute12: String
+    name: String
+    objectGUID: String
+    userAccountControl: Int
+    badPwdCount: Int
+    codePage: Int
+    countryCode: Int
+    badPasswordTime: String
+    pwdLastSet: String
+    pwdLastSetExt: String
+    primaryGroupID: Int
+    objectSid: String
+    accountExpires: String
+    sAMAccountName: String
+    sAMAccountType: Int
+    legacyExchangeDN: String
+    userPrincipalName: String
+    lockoutTime: String
+    objectCategory: String
+    lastLogonTimestamp: String
+    msDSExternalDirectoryObjectId: String
+    textEncodedORAddress: String
+    mail: String
+    manager: String
+    managerExt: LdapUser
+    mobile: String
+    msExchUserAccountControl: Int
+    msExchMailboxGuid: String
+    msRTCSIPUserEnabled: Boolean
+    msExchAuditDelegateAdmin: Int
+    msExchArchiveGUID: String
+    msRTCSIPPrimaryHomeServer: String
+    msExchAuditOwner: Int
+    msExchRemoteRecipientType: Int
+    msExchELCMailboxFlags: Int
+    msExchMailboxAuditEnable: Boolean
+    msRTCSIPFederationEnabled: Boolean
+    msExchRecipientTypeDetails: Int
+    msExchAuditAdmin: Int
+    msExchArchiveStatus: Int
+    msExchRecipientDisplayType: Int
+    msRTCSIPOptionFlags: Int
+    msRTCSIPPrimaryUserAddress: String
+    msExchUsageLocation: String
+    msExchMailboxAuditLogAgeLimit: Int
+    msExchWhenMailboxCreated: String
+    msExchOWAPolicy: String
+    msRTCSIPInternetAccessEnabled: Boolean
+    msExchSafeSendersHash: String
+    msRTCSIPDeploymentLocator: String
+    msExchMobileMailboxFlags: Int
+    msExchVersion: Int
+    msExchAuditDelegate: Int
+    msExchMailboxTemplateLink: String
+    msExchTextMessagingState: [Int]
+    msExchUMDtmfMap: [String]
+    msRTCSIPUserPolicies: [String]
+    msExchUserHoldPolicies: [String]
+    msExchArchiveName: [String]
+    msExchPoliciesExcluded: [String]
+    dSCorePropagationData: [String]
+    showInAddressBook: [String]
+    protocolSettings: [String]
+    directReports: [String]
+    proxyAddresses: [String]
+    memberOf: [String]
+    objectClass: [String]
+  }
 
-
-
-type LdapUser {
-  dn: ID!
-  ldap_id: String
-  directReportsExt: [LdapUser]
-  memberOfExt: [LdapGroup]
-  cn: String
-  sn: String
-  c: String
-  l: String
-  postalCode: String
-  telephoneNumber: String
-  givenName: String
-  distinguishedName: String
-  instanceType: Int
-  whenCreated: String
-  whenChanged: String
-  displayName: String
-  uSNCreated: Int
-  uSNChanged: Int
-  co: String
-  company: String
-  streetAddress: String
-  targetAddress: String
-  extensionAttribute2: String
-  extensionAttribute6: String
-  extensionAttribute7: String
-  extensionAttribute9: String
-  extensionAttribute10: String
-  mailNickname: String
-  extensionAttribute12: String
-  name: String
-  objectGUID: String
-  userAccountControl: Int
-  badPwdCount: Int
-  codePage: Int
-  countryCode: Int
-  badPasswordTime: String
-  pwdLastSet: String
-  pwdLastSetExt: String
-  primaryGroupID: Int
-  objectSid: String
-  accountExpires: String
-  sAMAccountName: String
-  sAMAccountType: Int
-  legacyExchangeDN: String
-  userPrincipalName: String
-  lockoutTime: String
-  objectCategory: String
-  lastLogonTimestamp: String
-  msDSExternalDirectoryObjectId: String
-  textEncodedORAddress: String
-  mail: String
-  manager: String
-  managerExt: LdapUser
-  mobile: String
-  msExchUserAccountControl: Int
-  msExchMailboxGuid: String
-  msRTCSIPUserEnabled: Boolean
-  msExchAuditDelegateAdmin: Int
-  msExchArchiveGUID: String
-  msRTCSIPPrimaryHomeServer: String
-  msExchAuditOwner: Int
-  msExchRemoteRecipientType: Int
-  msExchELCMailboxFlags: Int
-  msExchMailboxAuditEnable: Boolean
-  msRTCSIPFederationEnabled: Boolean
-  msExchRecipientTypeDetails: Int
-  msExchAuditAdmin: Int
-  msExchArchiveStatus: Int
-  msExchRecipientDisplayType: Int
-  msRTCSIPOptionFlags: Int
-  msRTCSIPPrimaryUserAddress: String
-  msExchUsageLocation: String
-  msExchMailboxAuditLogAgeLimit: Int
-  msExchWhenMailboxCreated: String
-  msExchOWAPolicy: String
-  msRTCSIPInternetAccessEnabled: Boolean
-  msExchSafeSendersHash: String
-  msRTCSIPDeploymentLocator: String
-  msExchMobileMailboxFlags: Int
-  msExchVersion: Int
-  msExchAuditDelegate: Int
-  msExchMailboxTemplateLink: String
-  msExchTextMessagingState: [Int]
-  msExchUMDtmfMap: [String]
-  msRTCSIPUserPolicies: [String]
-  msExchUserHoldPolicies: [String]
-  msExchArchiveName: [String]
-  msExchPoliciesExcluded: [String]
-  dSCorePropagationData: [String]
-  showInAddressBook: [String]
-  protocolSettings: [String]
-  directReports: [String]
-  proxyAddresses: [String]
-  memberOf: [String]
-  objectClass: [String]
-}
-
-type Query {
-  ldap_search(
-    ldap_id: String!,
-    basedn: String!,
-    filter: String!,
-    scope: String = "sub",
-    attributes: [String]): Json
-  ldap_search_computer(
-    ldap_id: String!,
-    basedn: String!,
-    filter: String!,
-    scope: String = "sub",
-    attributes: [String]): [LdapComputer]
-  ldap_search_group(
-    ldap_id: String!,
-    basedn: String!,
-    filter: String!,
-    scope: String = "sub",
-    attributes: [String]): [LdapGroup]
-  ldap_search_user(
-    ldap_id: String!,
-    basedn: String!,
-    filter: String!,
-    scope: String = "sub",
-    attributes: [String]): [LdapUser]
-}
+  type Query {
+    ldap_search(
+      ldap_id: String!
+      basedn: String!
+      filter: String!
+      scope: String = "sub"
+      attributes: [String]
+    ): [LdapObject]
+    ldap_search_computer(
+      ldap_id: String!
+      basedn: String!
+      filter: String!
+      scope: String = "sub"
+      attributes: [String]
+    ): [LdapComputer]
+    ldap_search_group(
+      ldap_id: String!
+      basedn: String!
+      filter: String!
+      scope: String = "sub"
+      attributes: [String]
+    ): [LdapGroup]
+    ldap_search_user(
+      ldap_id: String!
+      basedn: String!
+      filter: String!
+      scope: String = "sub"
+      attributes: [String]
+    ): [LdapUser]
+  }
 `;
 
 const resolvers = {
-  LdapGroupOrUser: {
+  LdapObject: {
     __resolveType(obj, context, info) {
+      if (obj && obj.objectClass.includes("computer")) {
+	return "LdapComputer";
+      }
       if (obj && obj.objectClass.includes("group")) {
 	return "LdapGroup";
       }
@@ -276,6 +292,12 @@ const resolvers = {
 	return "LdapUser";
       }
       return null; // GraphQLError is thrown
+    },
+  },
+  LdapComputer: {
+    ipaddress: async (computer, _args, { dataSources }) => {
+      const ipaddress = await getIP(computer.dNSHostName);
+      return ipaddress ? ipaddress.address : null;
     },
   },
   LdapGroup: {
@@ -335,7 +357,7 @@ const resolvers = {
       try {
 	const resp = await dataSources[ldap_id].search(basedn, opts);
 	console.log(resp);
-	return { json: JSON.stringify(resp) };
+	return resp;
       } catch (err) {
 	console.log(err);
       }
