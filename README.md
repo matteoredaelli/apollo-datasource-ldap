@@ -65,6 +65,36 @@ Sample queries
 
 ```graphql
 {
+  ldap_search(
+	ldap_id: "ldap_xxx"
+	basedn: "dc=xxx,dc=redaelli,dc=org"
+	filter: "(samaccountname=server1)"
+  ) {
+	... on LdapComputer {
+		sAMAccountName
+		dNSHostName
+		ipaddress
+	}
+  }
+}
+```
+
+```graphql
+{
+  ldap_search_computer(
+	ldap_id: "ldap_xxx"
+	basedn: "dc=xxx,dc=redaelli,dc=org"
+	filter: "(samaccountname=server1)"
+  ) {
+	  sAMAccountName
+	  dNSHostName
+	  ipaddress
+  }
+}
+```
+
+```graphql
+{
   ldap_search_group(
 	ldap_id: "ldap_xxx"
 	basedn: "dc=xxx,dc=redaelli,dc=org"
