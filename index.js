@@ -32,7 +32,6 @@ function filetime2date(ldaptime) {
 
 async function getIP(host) {
   const lookup = util.promisify(dns.lookup);
-
   try {
     result = lookup(host);
     return result;
@@ -75,6 +74,26 @@ class LdapDataSource extends DataSource {
     const resp = await this.search(basedn, opts);
     console.log(resp);
     return Array.isArray(resp) && resp.length > 0 ? resp[0] : {};
+  }
+  async search_flat_member_by_dn(basedn, dn) {
+    const opts = {
+      filter: `(member:1.2.840.113556.1.4.1941:=${dn})`,
+      scope: "sub",
+    };
+    //console.log("opts :", opts);
+    const resp = await this.search(basedn, opts);
+    console.log(resp);
+    return resp;
+  }
+  async search_flat_member_of_by_dn(basedn, dn) {
+    const opts = {
+      filter: `(memberOf:1.2.840.113556.1.4.1941:=${dn})`,
+      scope: "sub",
+    };
+    //console.log("opts :", opts);
+    const resp = await this.search(basedn, opts);
+    console.log(resp);
+    return resp;
   }
 }
 
@@ -128,6 +147,8 @@ const typeDefs = gql`
     dn: ID!
     ldap_id: String
     memberExt: [LdapObject]
+    flat_member: [String]
+    flat_memberOf: [String]
     cn: String
     distinguishedName: String
     instanceType: Int
@@ -296,8 +317,15 @@ const resolvers = {
   },
   LdapComputer: {
     ipaddress: async (computer, _args, { dataSources }) => {
-      const ipaddress = await getIP(computer.dNSHostName);
-      return ipaddress ? ipaddress.address : null;
+      if (computer && computer.dNSHostName) {
+	try {
+	  const ipaddress = await getIP(computer.dNSHostName);
+	  return ipaddress ? ipaddress.address : null;
+	} catch (err) {
+	  console.log(err);
+	  return null;
+	}
+      } else return null;
     },
   },
   LdapGroup: {
@@ -308,6 +336,20 @@ const resolvers = {
 	group.member.map((g) => ds.search_by_dn(basedn, g))
       );
       return details;
+    },
+    flat_member: async (user, _args, { dataSources }) => {
+      const ds = dataSources[user.ldap_id];
+      const basedn = ds.basedn;
+      return Array.isArray(user.member) && user.member.length > 0
+	? await ds.search_flat_member_by_dn(basedn, user.dn)
+	: [];
+    },
+    flat_memberOf: async (user, _args, { dataSources }) => {
+      const ds = dataSources[user.ldap_id];
+      const basedn = ds.basedn;
+      return Array.isArray(user.member) && user.member.length > 0
+	? await ds.search_flat_member_of_by_dn(basedn, user.dn)
+	: [];
     },
   },
   LdapUser: {

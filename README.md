@@ -61,7 +61,7 @@ ldap.json
 }
 ```
 
-Sample queries
+## Sample queries
 
 ```graphql
 {
@@ -127,3 +127,9 @@ Sample queries
   }
 }}
 ```
+## TODO
+
+- [X] LdapComputer type
+- [X] GroupComputer type
+- [X] UserComputer type
+- [ ] other ldap types
