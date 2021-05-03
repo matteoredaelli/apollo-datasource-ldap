@@ -19,7 +19,8 @@
   "keywords": [
     "apollo",
     "graphql",
-    "ldap"
+    "ldap",
+    "activedirectory
   ],
   "author": "Matteo Redaelli",
   "license": "MIT",
