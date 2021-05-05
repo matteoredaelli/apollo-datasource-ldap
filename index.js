@@ -219,6 +219,7 @@ const typeDefs = gql`
     lockoutTime: String
     objectCategory: String
     lastLogonTimestamp: String
+    lastLogonTimestampExt: String
     msDSExternalDirectoryObjectId: String
     textEncodedORAddress: String
     mail: String
@@ -364,7 +365,9 @@ const resolvers = {
     pwdLastSetExt: async (user, _args, _) => {
       return filetime2date(user.pwdLastSet);
     },
-
+    lastLogonTimestampExt: async (user, _args, _) => {
+      return filetime2date(user.lastLogonTimestamp);
+    },
     managerExt: async (user, _args, { dataSources }) => {
       const ds = dataSources[user.ldap_id];
       const basedn = ds.basedn;
