@@ -30,6 +30,13 @@ function filetime2date(ldaptime) {
   return mydate.toISOString();
 }
 
+function filetimeDaysFromNow(ldaptime) {
+  const unixTime = ldaptime / 10000000 - 11644473600;
+  const now = new Date();
+  const mydate = new Date(Math.round(unixTime * 1000));
+  const days = Math.floor((now - mydate) / 86400000);
+  return days;
+}
 async function getIP(host) {
   const lookup = util.promisify(dns.lookup);
   try {
@@ -175,6 +182,8 @@ const typeDefs = gql`
     ldap_id: String
     directReportsExt: [LdapUser]
     memberOfExt: [LdapGroup]
+    lastLogonTimestampExt: String
+    locked: Boolean
     cn: String
     sn: String
     c: String
@@ -209,6 +218,7 @@ const typeDefs = gql`
     badPasswordTime: String
     pwdLastSet: String
     pwdLastSetExt: String
+    pwdLastSetDays: Int
     primaryGroupID: Int
     objectSid: String
     accountExpires: String
@@ -219,7 +229,6 @@ const typeDefs = gql`
     lockoutTime: String
     objectCategory: String
     lastLogonTimestamp: String
-    lastLogonTimestampExt: String
     msDSExternalDirectoryObjectId: String
     textEncodedORAddress: String
     mail: String
@@ -362,8 +371,14 @@ const resolvers = {
       );
       return details;
     },
+    locked: async (user, _args, _) => {
+      return user.lockoutTime && parseInt(user.lockoutTime) > 0;
+    },
     pwdLastSetExt: async (user, _args, _) => {
       return filetime2date(user.pwdLastSet);
+    },
+    pwdLastSetDays: async (user, _args, _) => {
+      return filetimeDaysFromNow(user.pwdLastSet);
     },
     lastLogonTimestampExt: async (user, _args, _) => {
       return filetime2date(user.lastLogonTimestamp);
