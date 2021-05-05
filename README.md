@@ -120,11 +120,21 @@ ldap.json
 	basedn: "dc=xxx,dc=redaelli,dc=org"
 	filter: "(samaccountname=matteo)"
   ){
-  dn
-  pwdLastSetExt
-  managerExt {
-	mail
-  }
+	sAMAccountName
+	pwdLastSetExt
+	pwdLastSetDays
+	lockoutTime
+	locked
+	lastLogonTimestampExt
+	managerExt {
+	  cn
+	  managerExt {
+		cn
+		managerExt {
+		  cn
+		}
+	  }
+	}
 }}
 ```
 ## TODO
