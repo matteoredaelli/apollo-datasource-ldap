@@ -54,8 +54,13 @@ ldap.json
 	"password": "mySillyPassword",
 	"basedn": "DC=xxx,DC=redaelli,DC=org",
 	"options": {
-	  "url": ["ldap://domaincontroller.xxx.redaelli.org:389"],
-	  "reconnect": true
+	  "url": ["ldaps://domaincontroller.xxx.redaelli.org"],
+	  "timeout": 0,
+	  "reconnect": true,
+	  "tlsOptions": {
+		  "requestCert": false,
+		  "rejectUnauthorized": false
+	  }
 	}
   }
 }

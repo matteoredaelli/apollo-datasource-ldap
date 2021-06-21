@@ -24,18 +24,28 @@ const ldap = require("ldapjs-promise");
 const util = require("util");
 const dns = require("dns");
 
+var tls = require("tls");
+
 function filetime2date(ldaptime) {
-  const unixTime = ldaptime / 10000000 - 11644473600;
-  const mydate = new Date(Math.round(unixTime * 1000));
-  return mydate.toISOString();
+  if (ldaptime) {
+    const unixTime = ldaptime / 10000000 - 11644473600;
+    const mydate = new Date(Math.round(unixTime * 1000));
+    return mydate.toISOString();
+  } else {
+    return null;
+  }
 }
 
 function filetimeDaysFromNow(ldaptime) {
-  const unixTime = ldaptime / 10000000 - 11644473600;
-  const now = new Date();
-  const mydate = new Date(Math.round(unixTime * 1000));
-  const days = Math.floor((now - mydate) / 86400000);
-  return days;
+  if (ldaptime) {
+    const unixTime = ldaptime / 10000000 - 11644473600;
+    const now = new Date();
+    const mydate = new Date(Math.round(unixTime * 1000));
+    const days = Math.floor((now - mydate) / 86400000);
+    return days;
+  } else {
+    return null;
+  }
 }
 async function getIP(host) {
   const lookup = util.promisify(dns.lookup);
@@ -52,23 +62,43 @@ class LdapDataSource extends DataSource {
   constructor(id, user, password, basedn, options) {
     super();
     this.ldap_id = id;
+    this.user = user;
+    this.password = password;
     this.basedn = basedn;
     this.options = options;
     this.client = ldap.createClient(options);
     console.log(this.client);
-    this.client.bind(user, password);
+    this.bind();
   }
 
   initialize(config) {
     this.context = config.context;
   }
 
-  async search(basedn, opts) {
+  bind() {
+    this.client.bind(this.user, this.password);
+  }
+
+  unbind() {
+    this.client.unbind();
+  }
+
+  async search(basedn, opts, client = false) {
     console.log("basedn: ", basedn);
     console.log("opts: ", opts);
     const ldap_id = this.ldap_id;
+
+    let client_new = client;
+
+    if (!client) {
+      client_new = this.client;
+      client_new.bind(this.user, this.password);
+    }
     const result = await this.client.searchReturnAll(basedn, opts);
     console.log("result: ", result);
+    if (!client) {
+      client_new.unbind();
+    }
     if ("entries" in result) {
       return result["entries"].map((v) => ({ ...v, ldap_id: ldap_id }));
     } else {
