@@ -47,6 +47,12 @@ function filetimeDaysFromNow(ldaptime) {
     return null;
   }
 }
+
+function accountExpires(value) {
+  if (value == "0" || value == "9223372036854775807") return false;
+  else return true;
+}
+
 async function getIP(host) {
   const lookup = util.promisify(dns.lookup);
   try {
@@ -157,6 +163,7 @@ const typeDefs = gql`
     primaryGroupID: Int
     objectSid: String
     accountExpires: String
+    accountExpiresExt: Boolean
     logonCount: Int
     sAMAccountName: String!
     sAMAccountType: Int
@@ -252,6 +259,7 @@ const typeDefs = gql`
     primaryGroupID: Int
     objectSid: String
     accountExpires: String
+    accountExpiresExt: Boolean
     sAMAccountName: String
     sAMAccountType: Int
     legacyExchangeDN: String
@@ -356,6 +364,9 @@ const resolvers = {
     },
   },
   LdapComputer: {
+    accountExpiresExt: async (computer, _args, _) => {
+      return accountExpires(computer.accountExpires);
+    },
     ipaddress: async (computer, _args, { dataSources }) => {
       if (computer && computer.dNSHostName) {
 	try {
@@ -393,6 +404,9 @@ const resolvers = {
     },
   },
   LdapUser: {
+    accountExpiresExt: async (user, _args, _) => {
+      return accountExpires(user.accountExpires);
+    },
     directReportsExt: async (user, _args, { dataSources }) => {
       const ds = dataSources[user.ldap_id];
       const basedn = ds.basedn;
