@@ -89,22 +89,14 @@ class LdapDataSource extends DataSource {
     this.client.unbind();
   }
 
-  async search(basedn, opts, client = false) {
+  async search(basedn, opts) {
     console.log("basedn: ", basedn);
     console.log("opts: ", opts);
     const ldap_id = this.ldap_id;
 
-    let client_new = client;
-
-    if (!client) {
-      client_new = this.client;
-      client_new.bind(this.user, this.password);
-    }
     const result = await this.client.searchReturnAll(basedn, opts);
     console.log("result: ", result);
-    if (!client) {
-      client_new.unbind();
-    }
+
     if ("entries" in result) {
       return result["entries"].map((v) => ({ ...v, ldap_id: ldap_id }));
     } else {
@@ -191,8 +183,8 @@ const typeDefs = gql`
     dn: ID!
     ldap_id: String
     memberExt: [LdapObject]
-    flat_member: [String]
-    flat_memberOf: [String]
+    flat_member: [LdapObject]
+    flat_memberOf: [LdapGroup]
     cn: String
     distinguishedName: String
     instanceType: Int
@@ -392,14 +384,14 @@ const resolvers = {
       const ds = dataSources[user.ldap_id];
       const basedn = ds.basedn;
       return Array.isArray(user.member) && user.member.length > 0
-	? await ds.search_flat_member_by_dn(basedn, user.dn)
+	? await ds.search_flat_member_of_by_dn(basedn, user.dn)
 	: [];
     },
     flat_memberOf: async (user, _args, { dataSources }) => {
       const ds = dataSources[user.ldap_id];
       const basedn = ds.basedn;
       return Array.isArray(user.member) && user.member.length > 0
-	? await ds.search_flat_member_of_by_dn(basedn, user.dn)
+	? await ds.search_flat_member_by_dn(basedn, user.dn)
 	: [];
     },
   },
