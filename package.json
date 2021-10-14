@@ -29,10 +29,9 @@
   },
   "homepage": "https://github.com/matteoredaelli/apollo-datasource-ldap#README.md",
   "dependencies": {
-    "apollo-datasource": "^0.8.0",
-    "apollo-server": "^2.23.0",
-    "dns": "^0.2.2",
-    "ldapjs-promise": "^1.0.5"
+    "apollo-datasource": "3.1.0",
+    "apollo-server": "^3.3.0",
+    "ldapjs-promise": "1.0.6"
   },
   "devDependencies": {
     "eslint": "^7",
