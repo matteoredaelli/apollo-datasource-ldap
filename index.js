@@ -74,7 +74,7 @@ class LdapDataSource extends DataSource {
     this.options = options;
     this.client = ldap.createClient(options);
     console.log(this.client);
-    this.bind();
+    // this.bind();
   }
 
   initialize(config) {
@@ -94,9 +94,11 @@ class LdapDataSource extends DataSource {
     console.log("opts: ", opts);
     const ldap_id = this.ldap_id;
 
-    const result = await this.client.searchReturnAll(basedn, opts);
+      var client = ldap.createClient(this.options);
+      client.bind(this.user, this.password);
+    const result = await client.searchReturnAll(basedn, opts);
     console.log("result: ", result);
-
+      client.unbind()
     if ("entries" in result) {
       return result["entries"].map((v) => ({ ...v, ldap_id: ldap_id }));
     } else {

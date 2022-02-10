@@ -1,11 +1,10 @@
 const { ApolloServer, gql } = require("apollo-server");
-const responseCachePlugin = require("apollo-server-plugin-response-cache");
 
 const {
   LdapDataSource,
   resolvers,
   typeDefs,
-} = require("apollo-datasource-ldap");
+} = require("./index.js");
 
 const ldap_config = require("./ldap.json");
 
@@ -26,7 +25,7 @@ const graphqlSchemaObj = {
   resolvers: resolvers,
   tracing: true,
   dataSources: () => ldapDS,
-  plugins: [responseCachePlugin()],
+  plugins: [],
   cacheControl: {
     defaultMaxAge: 3600, // 3600 seconds
   },
