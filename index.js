@@ -213,6 +213,7 @@ const typeDefs = gql`
     ldap_id: String
     directReportsExt: [LdapUser]
     memberOfExt: [LdapGroup]
+    memberOfNested: [LdapGroup]
     lastLogonTimestampExt: String
     locked: Boolean
     cn: String
@@ -430,6 +431,20 @@ const resolvers = {
       return details; //.filter(function (u) {
       //return u.distinguishedName ? true : false;
       //});
+    },
+    memberOfNested: async (user, _args, { dataSources }) => {
+      const ds = dataSources[user.ldap_id];
+	const basedn = ds.basedn;
+	const user_dn = user.dn;
+	console.log(user_dn);
+	const opts = {
+	    filter: `(member:1.2.840.113556.1.4.1941:=${user_dn})`,
+	    scope: "sub",
+	    timeLimit: 600
+	    //attributes: attributes,
+	};
+      const details = await ds.search(basedn, opts);
+      return details;
     },
     memberOfExt: async (user, _args, { dataSources }) => {
       const ds = dataSources[user.ldap_id];

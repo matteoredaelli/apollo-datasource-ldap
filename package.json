@@ -1,7 +1,7 @@
 {
   "name": "apollo-datasource-ldap",
-  "version": "0.0.7",
-  "description": "LDAP datasource for Apolo GraphQL server",
+  "version": "0.0.9",
+  "description": "LDAP datasource for Apollo GraphQL server",
   "main": "index.js",
   "scripts": {
     "lint": "prettier '**/*.js' && eslint '**/*.js'",
